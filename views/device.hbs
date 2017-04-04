@@ -1,0 +1,296 @@
+<script src="/static/js/page-device.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+
+        $('#modal_topic').on('show.bs.modal', function (e) {
+
+            $("#form_topic input[name!='device_id']").val('');
+
+            var res = $(e.relatedTarget).parents('.observation-row').attr('id');
+            res = res.split('-');
+
+            var data = {
+                oid: res[1],
+                iid: res[2],
+                rid: res[3]
+            };
+
+            _.map(data, function(v, k){
+                var form_input = $("#form_topic input[name='"+k+"']");
+                if(form_input) form_input.val(v);
+            });
+        });
+
+        $('#btn_save_topic').click(function () {
+            $.post("/device/cud-topic", $("#form_topic").serialize(), function(data){
+                if(!data.error){
+                    $("#modal_topic").modal('hide');
+                    toastr.success("Successfully added the MQTT Topic.", "MQTT Topic");
+                } else {
+                    toastr.error(data.error.message, data.error.name);
+                }
+            });
+        });
+
+        $('#modal_model').on('show.bs.modal', function (e) {
+            $("#modal_model .modal-title").html('Add Device Model');
+            $("#modal_model input[name!='device_id']").each(function(i, ele){
+                $(ele).val('');
+            });
+            $("#modal_model input[name='endpoint_prefix']").val( $(".device-details .name").html() );
+        });
+
+        $('#btn_save_model').click(function () {
+            $.post("/device-models/cud-model", $("#form_model").serialize(), function(data){
+                if(!data.error){
+                    $("#modal_model").modal('hide');
+                    toastr.success("Successfully added device model.", "Device model");
+                } else {
+                    toastr.error(data.error.message, data.error.name);
+                }
+            });
+        });
+    });
+</script>
+{{#device}}
+<div class="col-lg-4" style="padding-right: 0px;padding-left: 0px;">
+    <div class="object-column" >
+        <div class="panel panel-primary">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col col-xs-6">
+              <h3 class="panel-title">Device details</h3>
+            </div>
+            <div class="col col-xs-6 text-right">
+              <span id="device-id" data-id="{{id}}">#{{id}}</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel-body">
+
+            <div class="col-lg-12 device-details">
+
+                <ul>
+
+                    <div class="row sm-gutter">
+                        <div class="col-md-12" >
+                            <li>
+                                <label>Name</label>
+                                <div class="content name" id="name-{{id}}">{{name}}</div>
+                            </li>
+                        </div>
+                    </div>
+
+                    <div class="row sm-gutter">
+                        <div class="col-xs-9">
+                            <li>
+                                <label>IP Address</label>
+                                <div class="content ipaddress" id="ipaddress-{{id}}">{{address}}</div>
+                            </li>
+                        </div>
+                        <div class="col-xs-3">
+                            <li>
+                                <label>Binding</label>
+                                <div class="content binding-box" id="binding-box-{{id}}">{{binding}}</div>
+                            </li>
+                        </div>
+                    </div>
+
+                    <div class="row sm-gutter">
+                        <div class="col-xs-8">
+                            <li>
+                                <label>Creation date</label>
+                                <div class="content lastseen" id="lastseen-{{id}}">{{formatDate creationDate "short"}}</div>
+                            </li>
+                        </div>
+
+                        <div class="col-xs-4" >
+                            <li>
+                                <label>Lifetime</label>
+                                <div class="content">
+                                    <div class="progress" style="margin-bottom: 0px;">
+                                        <div class="progress-bar progress-bar-success lifetime-bar" role="progressbar"
+                                             aria-valuenow="{{lifetime}}" aria-valuemin="0"
+                                             aria-valuemax="{{lifetime}}" style="width: 100%;" id="lifetime-bar-{{id}}">
+                                            {{lifetime}}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </li>
+                        </div>
+                    </div>
+
+                    <div class="row sm-gutter">
+                        <!--<li>-->
+                            <!--<label>Battery</label>-->
+                            <!--<div class="content">-->
+                                <!--<div class="progress" style="margin-bottom: 0px;">-->
+                                    <!--<div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">-->
+                                        <!--60%-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                        <!--</li>-->
+                    </div>
+                </ul>
+            </div>
+
+        </div>
+      </div>
+
+        <div class="panel panel-warning">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col col-xs-6">
+              <h3 class="panel-title">Observations</h3>
+            </div>
+          </div>
+        </div>
+        <div class="panel-body">
+            <div class="col-lg-12">
+                <div class="row" style="border-bottom: 2px solid #faebcc;padding-bottom: 3px;">
+                    <div class="col-sm-3 table-head" style="padding-left: 5px;">Object</div>
+                    <div class="col-sm-3 table-head">Resource</div>
+                    <div class="col-sm-3 table-head">Path</div>
+                    <div class="col-sm-3 "></div>
+                </div>
+                <div id="observations-list">
+                    {{#observations}}
+                        {{> tmpl/observation-row}}
+                    {{/observations}}
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+<div class="col-lg-8" style="padding-right: 0px;padding-left: 0px;">
+    <div id="objects-grid">
+        {{#each objects}}
+            <div class="objects-grid-item">
+                <div class="panel panel-default" style="margin-bottom: 10px;">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col col-xs-6">
+                                <h3 class="panel-title ipso-object-title">
+                                    {{#if shortname}}{{capitalize shortname}} <sub>{{id}}</sub>{{else}}{{id}}{{/if}}
+                                </h3>
+                            </div>
+                            <div class="col col-xs-6 text-right">
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        {{#each instances}}
+                            {{#ObjectTmplExist ../id}}
+                                {{> (lookup .. 'id') iid=id oid=../id resources=resources}}
+                            {{else}}
+                                {{> objDefault iid=id oid=../id resources=resources}}
+                            {{/ObjectTmplExist}}
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        {{/each}}
+    </div>
+</div>
+
+<div id="modal_topic" class="modal" role="dialog">
+  <div class="modal-dialog">
+      <div class="modal-content panel-primary">
+          <div class="modal-header panel-heading">
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+              <h4 class="modal-title">Add MQTT Topic</h4>
+          </div>
+          <div class="modal-body">
+              <form id="form_topic">
+                  <input type="hidden" name="device_id" value="{{id}}">
+                  <input type="hidden" name="oid">
+                  <input type="hidden" name="iid">
+                  <input type="hidden" name="rid">
+                  <div class="form-group">
+                      <label class="form-control-label">MQTT Topic:</label>
+                      <input type="text" class="form-control" name="mqtt_topic">
+                  </div>
+              </form>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" id="btn_save_topic">Save</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div id="modal_model" class="modal" role="dialog" tabindex="-1">
+  <div class="modal-dialog">
+      <div class="modal-content panel-primary">
+          <div class="modal-header panel-heading">
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+              <h4 class="modal-title">Title</h4>
+          </div>
+          <div class="modal-body">
+              <form id="form_model">
+                  <input type="hidden" name="device_id" value="{{id}}">
+                  <div class="form-group">
+                      <label for="recipient-name" class="form-control-label">ID:</label>
+                      <input type="text" class="form-control" name="id">
+                  </div>
+                  <div class="form-group">
+                      <label for="recipient-name" class="form-control-label">Name:</label>
+                      <input type="text" class="form-control" name="name">
+                  </div>
+                  <div class="form-group">
+                      <label for="message-text" class="form-control-label">Endpoint prefix:</label>
+                      <input type="text" class="form-control" name="endpoint_prefix">
+                  </div>
+              </form>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" id="btn_save_model">Save</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+{{/device}}
+
+<div id="popover-write" class="popover popover-primary">
+    <div class="arrow"></div>
+    <div class="popover-title"><span class="close" data-dismiss="popover-x">&times;</span>Write operation</div>
+    <div class="popover-content">
+        <input class="form-control" placeholder="Payload">
+    </div>
+    <div class="popover-footer">
+        <button type="submit" class="btn btn-sm btn-primary lwm2m-btn" id="">Send</button>
+    </div>
+</div>
+
+<div id="popover-observe" class="popover popover-success">
+    <div class="arrow"></div>
+    <div class="popover-title"><span class="close" data-dismiss="popover-x">&times;</span>Observe operation</div>
+    <div class="popover-content">
+        Add an observation for the resource <span class="resource-path"></span>.
+    </div>
+    <div class="popover-footer">
+        <button type="submit" class="btn btn-sm btn-success lwm2m-btn" id="">Observe</button>
+    </div>
+</div>
+
+<div id="popover-cancel" class="popover popover-warning">
+    <div class="arrow"></div>
+    <div class="popover-title"><span class="close" data-dismiss="popover-x">&times;</span>Cancel operation</div>
+    <div class="popover-content">
+        Cancel the observation for the resource <span class="resource-path"></span>.
+    </div>
+    <div class="popover-footer">
+        <button type="submit" class="btn btn-sm btn-warning lwm2m-btn" id="">Cancel</button>
+    </div>
+</div>
+
+<!--Need at leat one button for the initialization of the popover-->
+<button class="lwm2m-btn-cancel" style="display:none;"></button>

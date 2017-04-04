@@ -1,0 +1,47 @@
+<script type="text/javascript">
+$(function() {
+
+    $('#device-card-grid').masonry({
+        itemSelector: '.device-grid-item'
+    });
+
+    $("body").on('click', '.device-card', function() {
+        window.location.href = "/device/"+$(this).attr('data-id');
+    });
+
+    $.each($(".lifetime-bar"), function(i, e){
+        update_lifetimes(e);
+    });
+
+    updateAllProgressBarColor();
+    start_lifetime_decrease();
+
+});
+</script>
+
+<div class="col-lg-8" style="padding-right: 0px;padding-left: 0px;">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <div class="row">
+                <div class="col col-xs-6">
+                    <h3 class="panel-title">Devices list</h3>
+                </div>
+                <div class="col col-xs-6 text-right">
+
+                </div>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div id="device-card-grid">
+                {{#sensors}}
+                    <div class="device-grid-item">
+                        {{> tmpl/device-card device=this}}
+                    </div>
+                {{/sensors}}
+            </div>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,356 @@
+
+body {
+    background-color: #585452;
+}
+
+.contentbody {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.no-padding {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.no-gutter > [class*='col-'] {
+    padding-right:0;
+    padding-left:0;
+}
+
+.sm-gutter > [class*='col-'] {
+    padding-right: 2px;
+    padding-left: 2px;
+}
+
+.error {
+    color: red;
+}
+
+.panel {
+    margin-bottom: 0.7em;
+}
+
+.panel-table .panel-body{
+  padding:0;
+}
+
+.panel-table .panel-body .table-bordered{
+  border-style: none;
+  margin:0;
+}
+
+.panel-table .panel-body .table-bordered > thead > tr > th:first-of-type {
+    text-align:center;
+    width: 100px;
+}
+
+.panel-table .panel-body .table-bordered > thead > tr > th:last-of-type,
+.panel-table .panel-body .table-bordered > tbody > tr > td:last-of-type {
+  border-right: 0px;
+}
+
+.panel-table .panel-body .table-bordered > thead > tr > th:first-of-type,
+.panel-table .panel-body .table-bordered > tbody > tr > td:first-of-type {
+  border-left: 0px;
+}
+
+.panel-table .panel-body .table-bordered > tbody > tr:first-of-type > td{
+  border-bottom: 0px;
+}
+
+.panel-table .panel-body .table-bordered > thead > tr:first-of-type > th{
+  border-top: 0px;
+}
+
+.panel-table .panel-footer .pagination{
+  margin:0; 
+}
+
+/*
+used to vertically center elements, may need modification if you're not using default sizes.
+*/
+.panel-table .panel-footer .col{
+ line-height: 34px;
+ height: 34px;
+}
+
+.panel-table .panel-heading .col h3{
+ line-height: 30px;
+ height: 30px;
+}
+
+.panel-table .panel-body .table-bordered > tbody > tr > td{
+  line-height: 34px;
+}
+
+.panel-title {
+    font-weight: bold;
+}
+
+.device-prop-row {
+  margin-bottom: 8px;
+}
+
+.device-prop-name {
+  padding-top: 5px;
+}
+
+.device-prop-value {
+    height: 30px;
+    background-color: #eeeeee;
+    padding-top: 5px;
+    font-family: "Lucida Console", Monaco, monospace;
+    border-radius: 10px;
+}
+
+.resource-row-name {
+    font-family: "Lucida Console", Monaco, monospace;
+    font-size: 10pt;
+    color: #777777;
+}
+
+.resource-row-value {
+    font-family: "Lucida Console", Monaco, monospace;
+    font-size: 10pt;
+    color: #777777;
+}
+
+hr.instance-separator {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0));
+    margin: 0px;
+    margin-bottom: 6px;
+}
+
+div.instance-head {
+  margin-bottom: 10px; 
+  /*border-radius: 8px; */
+  background-color: #FAFAFA; 
+  padding: 4px; 
+  padding-left: 0px;
+  font-weight: normal;
+}
+
+.threecolumn_container {
+    -webkit-columns: 3;
+    -moz-columns: 3;
+    columns: 3 ;
+    -webkit-column-gap: 0.7em;
+    -moz-column-gap: 0.7em;
+}
+
+.column_wrapper {
+    break-inside: avoid-column;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+.ipso-object-title {
+    font-weight: bold;
+}
+
+/* Dynamic columns for device display */
+/*@media screen and (min-width: 1px) and (max-width: 700px){
+    #devices-columns[data-columns]::before {
+        content: '1 .col-xs-12';
+    }
+}
+
+@media screen and (min-width: 701px) and (max-width: 954px){
+    #devices-columns[data-columns]::before {
+        content: '2 .col-xs-6';
+    }
+}
+
+@media screen and (min-width:1100px) and (max-width: 9999px){
+    #devices-columns[data-columns]::before {
+        content: '3 .col-xs-4';
+    }
+}*/
+
+/* Dynamic columns for objects display */
+@media screen and (min-width: 1px) and (max-width: 860px){
+    .objects-grid-item {
+        width: 100%;
+        padding-left: 5px;
+        padding-right: 0px;
+    }
+}
+
+@media screen and (min-width:861px) and (max-width: 9999px){
+    .objects-grid-item {
+        width: 50%;
+        padding-left: 5px;
+        padding-right: 0px;
+    }
+}
+
+.loader-small {
+    border: 2px solid #e4e4e4;
+    border-top: 2px solid #706f75;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 2s linear infinite;
+}
+
+.loader-medium {
+    border: 10px solid #e4e4e4;
+    border-top: 10px solid #706f75;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    animation: spin 2s linear infinite;
+}
+
+.loader-top-centered {
+    position:absolute;
+    z-index: 10;
+    display:block;
+    left: 50%;
+    margin-left: -50px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.opacity-20 {
+    opacity: 0.2;
+}
+
+.popover-title {
+    font-weight: bold;
+}
+
+.observation-row {
+    padding-bottom: 3px;
+    padding-top: 4px;
+    border-top: 1px solid #faebcc;
+    vertical-align: middle;
+
+}
+
+
+.resource-path {
+    font-family: monospace;
+    font-size: 9pt;
+    color: #a04245;
+    background-color: #efeeed;
+    padding: 2px 6px 2px 6px;
+    border-radius: 5px;
+}
+
+.table-head {
+    font-weight: bold;
+}
+
+.button-action-selected{
+    background-color: #4cae4c;
+}
+
+.center {text-align: center;}
+
+.resource-mandatory::before {
+    content: "•";
+    color: #f50011;
+    position: absolute;
+    left: 9px;
+}
+
+/* ---------------------------------------------------------------------------- */
+
+.device-grid-item {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.device-card {
+    background: #fff;
+    border-radius: 6px;
+    margin-bottom: 30px;
+    min-width: 300px;
+    max-width: 400px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+}
+
+.device-card:hover {
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+
+.device-card-header {
+    background-color: #efefef;
+    border-bottom: 1px solid #e6e6e6;
+    border-top: 1px solid #f3f3f3;
+    border-radius: 6px 6px 0px 0px;
+    height: 40px;
+    padding-top: 10px;
+}
+
+.device-card-title {
+    font-size: 11pt;
+    font-weight: bold;
+}
+
+#device-box-body .row-prop {
+    height: 20px;
+    background-color: #eeeeee;
+    padding-top: 5px;
+    font-size: 10pt;
+    font-family: "Lucida Console", Monaco, monospace;
+    border-radius: 10px;
+    position: relative;
+}
+
+.device-card-body {
+    border-radius:2px;
+    padding:10px;
+}
+
+.device-details ul{
+    list-style:none;
+    padding: 0px;
+    margin:0;
+    padding-top: 9px;
+}
+.device-details li{
+    /*display: block;*/
+    padding: 4px;
+    border:1px solid #DDDDDD;
+    margin-bottom: 16px;
+    border-radius: 3px;
+}
+
+.device-details li > label{
+    display: block;
+    float: left;
+    margin-top: -18px;
+    background: #FFFFFF;
+    height: 10px;
+    padding: 2px 5px 0px 5px;
+    color: #B9B9B9;
+    font-size: 10px;
+}
+
+.device-details li > div{
+    display: block;
+    font-family: "Lucida Console", Monaco, monospace;
+    font-size: 10pt;
+    color: #2e2e2e;
+}
+
+.device-details li > span{
+    background: #F3F3F3;
+    display: block;
+    padding: 3px;
+    margin: 0 -9px -9px -9px;
+    text-align: center;
+    color: #C0C0C0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+}

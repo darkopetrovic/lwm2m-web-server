@@ -1,0 +1,23 @@
+<div class="row observation-row" id="observation-{{parseResPath resource 0}}-{{parseResPath resource 1}}-{{parseResPath resource 2}}">
+    <div class="col-sm-3 resource-row-name" style="padding-left: 5px;">
+    {{#if object_shortname}}{{capitalize object_shortname}}{{else}}{{parseResPath resource 0}}{{/if}}
+    </div>
+    <div class="col-sm-3 resource-row-name">{{resource_shortname}}</div>
+    <div class="col-sm-3"><span class="resource-path">{{resource}}</span></div>
+    <div class="col-sm-3 text-right" style="padding-right: 5px;">
+        <div class="btn-group">
+            <button type="button" class="btn btn-default btn-xs">View</button>
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="#" data-toggle="modal" data-target="#modal_topic" id="btn_add_topic">Add MQTT Topic</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#" class="lwm2m-btn"
+                       id="btn-cancel-{{parseResPath resource 0}}-{{parseResPath resource 1}}-{{parseResPath resource 2}}">Cancel</a></li>
+            </ul>
+        </div>
+    </div>
+</div>

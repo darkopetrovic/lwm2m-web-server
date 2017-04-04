@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Sensors Interface</title>
+        <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+        <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" >-->
+        <link rel="stylesheet" href="/static/css/popover.css" media="all" type="text/css">
+        <link rel="stylesheet" href="/static/css/bootstrap-select.min.css">
+        <link rel="stylesheet" href="/static/css/default.css">
+        <link rel="stylesheet" href="/static/css/toastr.min.css">
+        <link rel="stylesheet" href="/static/css/datatables.min.css">
+        <!--<script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>-->
+
+        <script src="/static/js/thirdparty/handlebars.runtime-v4.0.5.js"></script>
+        <script src="/static/js/thirdparty/underscore-min.js"></script>
+        <script src="/static/js/thirdparty/datatables.min.js"></script>
+        <script src="/static/js/thirdparty/bootstrap-select.min.js"></script>
+        <script src="/static/js/thirdparty/jquery-ui.min.js"></script>
+        <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>-->
+        <!--<script src="/static/js/thirdparty/bootstrap.min.js"></script>-->
+        <!--<script src="/static/js/thirdparty/tether.min.js"></script>-->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+        <script src="/static/js/thirdparty/bootstrap-popover-x.min.js"></script>
+        <script src="/static/js/thirdparty/toastr.min.js"></script>
+        <script src="/static/js/thirdparty/moment.js"></script>
+        <script src="/static/js/thirdparty/masonry.pkgd.min.js"></script>
+
+        <script src="/socket.io/socket.io.js"></script>
+
+        <script src="/static/js/compiled_templates.js"></script>
+        <!--<script src="/static/js/lwm2mid-browser.js"></script>-->
+        <script src="/static/js/hbs-helpers.js"></script>
+        <script src="/static/js/script.js"></script>
+
+        <script >
+            $(document).ready(function(){
+              // jQuery.noConflict();
+            });
+        </script>
+
+    </head>
+    <body>
+        <div>
+            <div style="margin-bottom: 60px;">
+                <nav class="navbar navbar-default navbar-fixed-top">
+                    <div class="container-fluid">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand" href="#">LWM2M Web Server</a>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                            <ul class="nav navbar-nav">
+                                <li><a href="/">Devices</a></li>
+                                <!--<li><a href="/observations">Observations</a></li>-->
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                       aria-haspopup="true" aria-expanded="false" id="settings">Settings <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="/objects-db">Objects DB</a></li>
+                                        <li><a href="/device-models">Device Models</a></li>
+                                    </ul>
+                                </li>
+
+                                {{#ifEqual "/device/" "in" cUrl}}
+                                    <li class="dropdown">
+                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                           aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a href="#" data-toggle="modal" data-target="#modal_model">Add as model</a></li>
+                                        </ul>
+                                    </li>
+                                {{/ifEqual}}
+
+                            </ul>
+                        </div><!-- /.navbar-collapse -->
+                    </div><!-- /.container-fluid -->
+                </nav>
+            </div>
+            <div id="content" class="contentbody">
+                {{{body}}}
+            </div>
+        </div>
+    </body>
+</html>

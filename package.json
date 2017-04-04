@@ -1,0 +1,31 @@
+{
+  "name": "lwm2m-web-sensors",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "nodemon --debug server.js"
+  },
+  "dependencies": {
+    "async": "latest",
+    "body-parser": "^1.15.2",
+    "cheerio": "^0.22.0",
+    "datatables-query": "^0.2.0",
+    "express": "latest",
+    "express-handlebars": "latest",
+    "lwm2m-id": "latest",
+    "lwm2m-node-lib": "*",
+    "moment": "^2.17.1",
+    "mongoose": "^4.8.1",
+    "mongoose-datatable": "^1.0.6",
+    "mongoose-datatables": "^2.0.1",
+    "mongoose-relationship": "^0.1.5",
+    "mqtt": "^2.3.1",
+    "socket.io": "^1.7.2",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-contrib-handlebars": "latest",
+    "grunt-contrib-watch": "latest",
+    "handlebars": "latest"
+  }
+}

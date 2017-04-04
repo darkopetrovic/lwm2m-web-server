@@ -1,0 +1,20 @@
+{
+  "name": "lwm2m-web-server",
+  "description": "",
+  "main": "server.js",
+  "authors": [
+    "darko <darko.petrovic.85@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/darkopetrovic/lwm2m-web-server",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.1.1"
+  }
+}

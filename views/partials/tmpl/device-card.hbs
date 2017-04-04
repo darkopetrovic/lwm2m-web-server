@@ -1,0 +1,68 @@
+<div class="device-card" id="device-card-{{id}}" data-id="{{id}}">
+    <div class="device-card-header">
+        <div class="col col-xs-6">
+            <span class="device-card-title" id="device-name" data-name="{{name}}">{{name}}</span>
+        </div>
+        <div class="col col-xs-6 text-right">
+            <span class="badge" style="background-color: #c6c6c6">{{id}}</span>
+        </div>
+    </div>
+    <div class="device-card-body device-details">
+        <ul>
+            <div class="row">
+                <div class="col-xs-9" style="padding-right: 0px">
+                    <li>
+                        <label>IP Address</label>
+                        <div class="content ipaddress" id="ipaddress-{{id}}">{{address}}</div>
+                    </li>
+                </div>
+                <div class="col-xs-3" style="padding-left: 5px">
+                    <li>
+                        <label>Binding</label>
+                        <div class="content binding-box" id="binding-box-{{id}}">{{binding}}</div>
+                    </li>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-8" style="padding-right: 0px">
+                    <li>
+                        <label>Creation date</label>
+                        <div class="content lastseen" id="lastseen-{{id}}">{{formatDate creationDate "short"}}</div>
+                    </li>
+                </div>
+
+                <div class="col-xs-4" style="padding-left: 5px">
+                    <li>
+                        <label>Lifetime</label>
+                        <div class="content">
+                            <div class="progress" style="margin-bottom: 0px;">
+                                <div class="progress-bar lifetime-bar progress-bar-success" role="progressbar"
+                                     aria-valuenow="{{lifetime}}" aria-valuemin="0"
+                                     aria-valuemax="{{lifetime}}" style="width: 100%;" id="lifetime-bar-{{id}}">
+                                    {{lifetime}}
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </div>
+            </div>
+
+            {{#ifEqual battery_level '>=' 0}}
+            <!--<li>-->
+                <!--<label>Battery</label>-->
+                <!--<div class="content">-->
+                    <!--<div class="progress" style="margin-bottom: 0px;">-->
+                        <!--<div class="progress-bar battery-bar" role="progressbar" id="bar-3-0-9"-->
+                             <!--aria-valuenow="{{battery_level}}" aria-valuemin="0"-->
+                             <!--aria-valuemax="100" style="width: 100%;">-->
+                            <!--{{battery_level}}%-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</li>-->
+            {{/ifEqual}}
+
+        </ul>
+    </div>
+</div>

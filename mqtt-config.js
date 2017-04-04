@@ -1,3 +1,4 @@
+/* MQTT configuration for sensors's data transfer to a database. */
 var mqtt_config = {
     host: "",
     port: 1883,

@@ -1,14 +1,14 @@
 'use strict';
 
-var lwm2mServer = require('../../lwm2m-node-lib/lib/lwm2m-node-lib').server,
-    config = require('../../lwm2m-node-lib/config-mongo'),
+var lwm2mServer = require('../lwm2m-node-lib/lib/lwm2m-node-lib').server,
+    config = require('../lwm2m-node-lib/config-mongo'),
     async = require('async'),
     events = require('events'),
     models = require('./models'),
     _ = require('underscore'),
     mqtt = require('mqtt'),
     lwm2mid = require('./lwm2mid'),
-    Device = require('../../lwm2m-node-lib/lib/services/model/Device'),
+    Device = require('../lwm2m-node-lib/lib/services/model/Device'),
     mqtt_config = require('../mqtt-config').mqtt_config;
 
 

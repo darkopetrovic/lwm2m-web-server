@@ -2,7 +2,8 @@
   "name": "lwm2m-web-sensors",
   "version": "0.0.1",
   "scripts": {
-    "start": "nodemon --debug server.js"
+    "start": "DEBUG=queudRequests nodemon --debug server.js",
+    "postinstall": "npm install lwm2m-node-lib"
   },
   "dependencies": {
     "async": "latest",
@@ -19,6 +20,7 @@
     "mongoose-datatables": "^2.0.1",
     "mongoose-relationship": "^0.1.5",
     "mqtt": "^2.3.1",
+    "nodemon": "^1.14.11",
     "socket.io": "^1.7.2",
     "underscore": "^1.8.3"
   },

@@ -9,8 +9,6 @@ Clone repositories in the same folder.
 ### LwM2M web server
 
     $ git clone --recursive https://github.com/darkopetrovic/lwm2m-web-server.git 
-    $ cd lwm2m-node-lib
-    $ sudo npm install
     $ cd lwm2m-web-server
     $ sudo npm install
 

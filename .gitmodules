@@ -1,4 +1,4 @@
 [submodule "lwm2m-node-lib"]
 	path = lwm2m-node-lib
-	url = https://github.com/darkopetrovic/lwm2m-node-lib.git
+	url = https://github.com/gt3389b/lwm2m-node-lib.git
 	branch = darko

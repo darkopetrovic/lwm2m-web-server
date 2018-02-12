@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "scripts": {
     "start": "DEBUG=queudRequests nodemon --debug server.js",
-    "postinstall": "npm install lwm2m-node-lib"
+    "postinstall": "npm install lwm2m-node-lib/",
+    "mongo": "docker run -d -p 27017:27017 mongo"
   },
   "dependencies": {
     "async": "latest",

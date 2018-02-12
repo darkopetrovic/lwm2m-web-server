@@ -70,6 +70,65 @@ function handleObserveValues(value, oid, iid, rid, did) {
         });
 }
 
+function resolveObjRes(endpoint, payload, cb) {
+
+   // update the registered device with the objects in payload and mandatory resources
+   var calls = [];
+   var objectsList = [];
+
+   if (payload != "") {
+      var objects = payload.toString().split(',');
+      _.each(objects, function (o) {
+         calls.push(function(callback) {
+            // TODO: handle the case where the instance is not specified in the registration payload
+            var objectId = parseInt(o.match(/<\/(.*)\/(.*)>/)[1]);
+            var objectInst = parseInt(o.match(/<\/(.*)\/(.*)>/)[2]);
+
+            var mandRes = [];
+            lwm2mid.getFullObject(objectId, function (err, object) {
+
+               // add the mandatory resource associated to the object
+               _.each(object.resourceDetails, function (r) {
+                  if (r.mandatory) {
+                        mandRes.push({id: parseInt(r.id), value: null});
+                  }
+               });
+
+               var obj = _.findWhere(objectsList, {id: objectId});
+               if (obj) {
+                  // object already in the list, just add the new instance
+                  obj.instances.push({
+                        id: objectInst,
+                        resources: mandRes
+                  });
+               } else {
+                  // add the object in the list
+                  objectsList.push({
+                        id: objectId,
+                        instances: [{
+                           id: objectInst,
+                           resources: mandRes
+                        }]
+                  });
+               }
+
+               callback(null);
+            });
+         });
+      });
+   }
+
+   async.parallel(calls, function(err, result){
+      Device.model.findOne({name: endpoint}, function(err, device){
+         // device's objects may have been populated by the device model below
+         device.objects = objectsList;
+         device.save(function(err) {
+            cb(device);
+         });
+      });
+   });
+}
+
 function registrationHandler(endpoint, lifetime, version, binding, payload, callback) {
     console.log('\nDevice registration:\n----------------------------\n');
     console.log('Endpoint name: %s\nLifetime: %s\nBinding: %s\nPayload: %s', endpoint, lifetime, binding, payload);
@@ -77,72 +136,10 @@ function registrationHandler(endpoint, lifetime, version, binding, payload, call
     // finish the registration in the database with this call
     callback();
 
-    // update the registered device with the objects in payload and mandatory resources
-    var calls = [];
-    var objectsList = [];
-
-    if (payload != "") {
-        var objects = payload.toString().split(',');
-
-        _.each(objects, function (o) {
-
-            calls.push(function(callback) {
-
-                // TODO: handle the case where the instance is not specified in the registration payload
-                var objectId = parseInt(o.match(/<\/(.*)\/(.*)>/)[1]);
-                var objectInst = parseInt(o.match(/<\/(.*)\/(.*)>/)[2]);
-
-                var mandRes = [];
-                lwm2mid.getFullObject(objectId, function (err, object) {
-
-                    // add the mandatory resource associated to the object
-                    _.each(object.resourceDetails, function (r) {
-                        if (r.mandatory) {
-                            mandRes.push({id: parseInt(r.id), value: null});
-                        }
-                    });
-
-                    var obj = _.findWhere(objectsList, {id: objectId});
-                    if (obj) {
-                        // object already in the list, just add the new instance
-                        obj.instances.push({
-                            id: objectInst,
-                            resources: mandRes
-                        });
-                    } else {
-                        // add the object in the list
-                        objectsList.push({
-                            id: objectId,
-                            instances: [{
-                                id: objectInst,
-                                resources: mandRes
-                            }]
-                        });
-                    }
-
-                    callback(null);
-
-                });
-
-            });
-
-        });
-
-    }
-
-    async.parallel(calls, function(err, result){
-        Device.model.findOne({name: endpoint}, function(err, device){
-
-            // device's objects may have been populated by the device model below
-            if(!device.objects.length){
-                device.objects = objectsList;
-                device.save();
-            }
-
-            if(webclient){
-                webclient.emit('new-registration', device);
-            }
-        });
+    resolveObjRes(endpoint, payload, function(device){
+         if(webclient){
+            webclient.emit('new-registration', device);
+         }
     });
 
     // get list of device model to compare with the registered device
@@ -237,10 +234,15 @@ function unregistrationHandler(device, callback) {
 
 function updateRegistrationHandler(obj, payload, callback) {
     callback();
-    //lwm2mevents.emit('update-registration', obj);
-    if(webclient){
-        webclient.emit('update-registration', obj);
-    }
+
+    console.log('\nDevice update registration:\n----------------------------\n');
+    console.log('Endpoint name: %s\nLifetime: %s\nBinding: %s\nPayload: %s', obj.name, obj.lifetime, obj.binding, payload);
+    resolveObjRes(obj.name, payload, function(device) {
+      //lwm2mevents.emit('update-registration', obj);
+      if(webclient){
+         webclient.emit('update-registration', device);
+      }
+    });
 }
 
 function setHandlers(serverInfo, callback) {

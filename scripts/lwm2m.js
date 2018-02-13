@@ -121,7 +121,7 @@ function resolveObjRes(endpoint, payload, cb) {
    async.parallel(calls, function(err, result){
       Device.model.findOne({name: endpoint}, function(err, device){
          // device's objects may have been populated by the device model below
-         console.log(device.objects);
+         //console.log(device.objects);
 
          var temp = []
          _.each(objectsList, function(object) {
@@ -139,26 +139,14 @@ function resolveObjRes(endpoint, payload, cb) {
 
          device.save(function(err) {
             if(err) console.log(err);
-            console.log(device);
+            //console.log(device);
             cb(device);
          });
       });
    });
 }
 
-function registrationHandler(endpoint, lifetime, version, binding, payload, callback) {
-    console.log('\nDevice registration:\n----------------------------\n');
-    console.log('Endpoint name: %s\nLifetime: %s\nBinding: %s\nPayload: %s', endpoint, lifetime, binding, payload);
-
-    // finish the registration in the database with this call
-    callback();
-
-    resolveObjRes(endpoint, payload, function(device){
-         if(webclient){
-            webclient.emit('new-registration', device);
-         }
-    });
-
+function processActions(endpoint) {
     // get list of device model to compare with the registered device
     var DeviceModel = models.DeviceModel;
     DeviceModel.find({}, function(err, device_models){
@@ -168,6 +156,7 @@ function registrationHandler(endpoint, lifetime, version, binding, payload, call
             // compare the device endpoint name with the prefix device model
             var regex = new RegExp("^"+device_model.endpoint_prefix+"?");
             if(endpoint.match(regex)){
+                console.log("ACTION MATCH!!!");
 
                 // copy full objects when present to the actual device (overwrite previous object list)
                 if(device_model.objects){
@@ -187,15 +176,24 @@ function registrationHandler(endpoint, lifetime, version, binding, payload, call
                     lwm2mServer.getDeviceByName(endpoint, function(error, device){
 
                         _.each(register_actions, function(e){
+                            //console.log(e);
 
                             if(e.command == "read"){
+                                lwm2mServer.read(device.id, parseInt(e.oid), parseInt(e.iid), parseInt(e.rid), function (error, result) {
+                                   if(!err)
+                                      console.log("Action: read returned: ", result);
+                                });
 
                             } else if (e.command == "write"){
                                 lwm2mServer.write(device.id, parseInt(e.oid), parseInt(e.iid), parseInt(e.rid), e.payload, function (error, result) {
-
+                                   if(!err)
+                                      console.log("Action: write returned: ", result);
                                 });
                             } else if (e.command == "execute"){
-
+                                lwm2mServer.execute(device.id, parseInt(e.oid), parseInt(e.iid), parseInt(e.rid), e.payload, function (error, result) {
+                                   if(!err)
+                                      console.log("Action: execute returned: ", result);
+                                });
                             } else if (e.command == "observe"){
                                 lwm2mServer.observe(device.id, parseInt(e.oid), parseInt(e.iid), parseInt(e.rid),
                                     handleObserveValues, function(error) {
@@ -230,6 +228,24 @@ function registrationHandler(endpoint, lifetime, version, binding, payload, call
                 });
             }
         })
+    });
+}
+
+function registrationHandler(endpoint, lifetime, version, binding, payload, callback) {
+    console.log('\nDevice registration:\n----------------------------\n');
+    console.log('Endpoint name: %s\nLifetime: %s\nBinding: %s\nPayload: %s', endpoint, lifetime, binding, payload);
+
+    // finish the registration in the database with this call
+    callback();
+
+    resolveObjRes(endpoint, payload, function(device){
+         if(webclient){
+            webclient.emit('new-registration', device);
+         }
+
+         // done, now process actions
+         //process.nextTick(processActions.bind(null,endpoint));
+         processActions(endpoint);
     });
 
 }

@@ -121,8 +121,25 @@ function resolveObjRes(endpoint, payload, cb) {
    async.parallel(calls, function(err, result){
       Device.model.findOne({name: endpoint}, function(err, device){
          // device's objects may have been populated by the device model below
-         device.objects = objectsList;
+         console.log(device.objects);
+
+         var temp = []
+         _.each(objectsList, function(object) {
+            var res = _.findWhere(device.objects, { id: object.id });
+            if(!res){
+               console.log("lwm2m adding new object into device: ", object);
+               temp.push(object);
+            } else {
+               temp.push(res);
+            }
+         })
+
+         // I tried adding the objects directly to the array but this causes a problem when saving the device.
+         device.objects = temp;
+
          device.save(function(err) {
+            if(err) console.log(err);
+            console.log(device);
             cb(device);
          });
       });

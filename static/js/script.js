@@ -107,8 +107,11 @@ $(function() {
             .removeClass('progress-bar-primary')
             .addClass('progress-bar-success');
 
+        $("#address-"+device.id).html( device.address );
+        $("#port-"+device.id).html( device.port );
         $("#binding-box-"+device.id).html(device.binding);
-        $("#lastseen-"+device.id).html( moment(device.creationDate).format(DateFormats['short']) );
+        $("#creationdate-"+device.id).html(device.creationDate);
+        $("#lastseen-"+device.id).html( moment(device.lastSeen).format(DateFormats['short']) );
 
     });
 

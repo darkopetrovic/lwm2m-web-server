@@ -25,7 +25,7 @@ function adjustProgressBarColor(bar, percentage)
         bar.addClass('progress-bar-primary');
     } else if (percentage>15 && percentage <= 50){
         bar.addClass('progress-bar-warning');
-    } else if (percentage>0 && percentage <= 15){
+    } else if (percentage <= 15){
         bar.addClass('progress-bar-danger');
     }
 }
@@ -38,7 +38,10 @@ function start_lifetime_decrease(){
             $(e).attr('aria-valuenow', valuenow-1);
             $(e).html(valuenow-1);
             var percentage = (valuenow-1)/valuemax*100;
-            $(e).css('width', percentage+'%');
+            if (valuenow <= 0)
+               $(e).css('width', '100%');
+            else
+               $(e).css('width', percentage+'%');
 
             if(percentage>50 && percentage<80){
                 $(e).removeClass('progress-bar-success').addClass('progress-bar-primary');

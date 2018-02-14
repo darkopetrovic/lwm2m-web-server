@@ -136,7 +136,7 @@ var register = function(Handlebars) {
             if (moment) {
                 // can use other formats like 'lll' too
                 format = DateFormats[format] || format;
-                return moment(datetime).format(format);
+                return moment(datetime).utc().format(format);
             }
             else {
                 return datetime;

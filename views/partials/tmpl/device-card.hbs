@@ -10,10 +10,16 @@
     <div class="device-card-body device-details">
         <ul>
             <div class="row">
-                <div class="col-xs-9" style="padding-right: 0px">
+                <div class="col-xs-6" style="padding-right: 0px">
                     <li>
                         <label>IP Address</label>
                         <div class="content ipaddress" id="ipaddress-{{id}}">{{address}}</div>
+                    </li>
+                </div>
+                <div class="col-xs-3" style="padding-right: 0px">
+                    <li>
+                        <label>Port</label>
+                        <div class="content port" id="port-{{id}}">{{port}}</div>
                     </li>
                 </div>
                 <div class="col-xs-3" style="padding-left: 5px">
@@ -44,6 +50,15 @@
                                 </div>
                             </div>
                         </div>
+                    </li>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-8" style="padding-right: 0px">
+                    <li>
+                        <label>Last seen</label>
+                        <div class="content lastseen" id="lastseen-{{id}}">{{formatDate lastSeen "short"}}</div>
                     </li>
                 </div>
             </div>

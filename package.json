@@ -2,7 +2,7 @@
   "name": "lwm2m-web-sensors",
   "version": "0.0.1",
   "scripts": {
-    "start": "DEBUG=queudRequests nodemon --debug server.js",
+    "start": "TZ=utc DEBUG=queuedRequests nodemon --debug server.js",
     "postinstall": "npm install lwm2m-node-lib/",
     "mongo": "docker run -d -p 27017:27017 mongo"
   },

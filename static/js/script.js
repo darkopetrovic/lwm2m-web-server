@@ -56,8 +56,8 @@ function start_lifetime_decrease(){
 
 function update_lifetimes(e){
     var lastseen_string = $(e).parents('.device-details').find('.lastseen').html();
-    var lastseen = moment(lastseen_string, "DD.MM.YYYY HH:mm:ss");
-    var now = moment();
+    var lastseen = moment(lastseen_string+" +0000", "DD.MM.YYYY HH:mm:ss Z");
+    var now = moment().utc();
     var elapsed = Math.round(moment.duration(now.diff(lastseen)).asSeconds());
     var valuemax = parseInt($(e).attr('aria-valuemax'));
     $(e).attr('aria-valuenow', valuemax-elapsed);
@@ -113,8 +113,8 @@ $(function() {
         $("#address-"+device.id).html( device.address );
         $("#port-"+device.id).html( device.port );
         $("#binding-box-"+device.id).html(device.binding);
-        $("#createdate-"+device.id).html( moment(device.createDate).format(DateFormats['short']) );
-        $("#lastseen-"+device.id).html( moment(device.lastSeen).format(DateFormats['short']) );
+        $("#creationdate-"+device.id).html( moment(device.createDate).utc().format(DateFormats['short']) );
+        $("#lastseen-"+device.id).html( moment(device.lastSeen).utc().format(DateFormats['short']) );
 
     });
 

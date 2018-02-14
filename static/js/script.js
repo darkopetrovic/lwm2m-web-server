@@ -113,7 +113,7 @@ $(function() {
         $("#address-"+device.id).html( device.address );
         $("#port-"+device.id).html( device.port );
         $("#binding-box-"+device.id).html(device.binding);
-        $("#creationdate-"+device.id).html(device.creationDate);
+        $("#createdate-"+device.id).html( moment(device.createDate).format(DateFormats['short']) );
         $("#lastseen-"+device.id).html( moment(device.lastSeen).format(DateFormats['short']) );
 
     });

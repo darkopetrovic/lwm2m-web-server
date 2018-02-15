@@ -9,7 +9,8 @@ var lwm2mServer = require('../lwm2m-node-lib/lib/lwm2m-node-lib').server,
     mqtt = require('mqtt'),
     lwm2mid = require('./lwm2mid'),
     Device = require('../lwm2m-node-lib/lib/services/model/Device'),
-    mqtt_config = require('../mqtt-config').mqtt_config;
+    mqtt_config = require('../mqtt-config').mqtt_config,
+    request = require('request');
 
 
 var lwm2mevents = new events.EventEmitter();
@@ -56,13 +57,44 @@ function handleObserveValues(value, oid, iid, rid, did) {
             if(observations){
                 observations.forEach(function(obs){
                     if(obs.mqtt_topic != ""){
-                        lwm2mServer.getDeviceById(did, function(error, device){
-                            var topic = obs.mqtt_topic.replace("{DEVICE_NAME}", device.name);
-                            topic = topic.replace("{OID}", oid);
-                            topic = topic.replace("{IID}", iid);
-                            topic = topic.replace("{RID}", rid);
-                            mqttclient.publish(topic, '{"value":'+value+'}');
-                        });
+                        if (obs.mqtt_topic.indexOf("http://") == 0) {
+                           console.log("sending to ", obs.mqtt_topic, did, oid, iid, rid, value);
+
+                           var props = { did:'9ea3abcc-91b3-5f7b-9fe4-c7526c131f2a', tag:596, val:value};
+                           //1) Ambient temperature => 596
+                           //2) Internal temperature => 616
+                           //3) Humidity => 163
+                           //4) Lux => 41
+                           if (oid == 3303 && iid == 0) {
+                              props.tag = 596
+                           }
+                           if (oid == 3303 && iid == 1) {
+                              props.tag = 616
+                           }
+                           if (oid == 3304 && iid == 0) {
+                              props.tag = 163
+                           }
+                           if (oid == 3301 && iid == 0) {
+                              props.tag = 41
+                           }
+
+                           console.log("sending to ", props);
+
+
+                           // did=9ea3abcc-91b3-5f7b-9fe4-c7526c131f2a tag=596 val=20
+                           request({ url: obs.mqtt_topic, method: 'GET', qs: props}, function(err, response, body) {
+                              if (err) { console.log(err); return; }
+                              console.log("HTTP: get response: ", response.statusCode);
+                           });
+                        } else {
+                           lwm2mServer.getDeviceById(did, function(error, device){
+                              var topic = obs.mqtt_topic.replace("{DEVICE_NAME}", device.name);
+                              topic = topic.replace("{OID}", oid);
+                              topic = topic.replace("{IID}", iid);
+                              topic = topic.replace("{RID}", rid);
+                              mqttclient.publish(topic, '{"value":'+value+'}');
+                           });
+                        }
                     }
                 });
             }

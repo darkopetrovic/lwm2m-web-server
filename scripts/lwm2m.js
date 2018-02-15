@@ -14,7 +14,7 @@ var lwm2mServer = require('../lwm2m-node-lib/lib/lwm2m-node-lib').server,
 
 var lwm2mevents = new events.EventEmitter();
 var observations = [];
-var webclient = null;
+var webclient = [];
 
 var mqttclient = mqtt.connect(mqtt_config);
 
@@ -37,7 +37,7 @@ function handleResult(message) {
 
 function handleObserveValues(value, oid, iid, rid, did) {
     console.log('\nGot new value: %s\n', value);
-    webclient.emit('response', {did: did, oid: oid, iid: iid, rid: rid, value: value, error: null});
+    _.each(webclient, function(client) {client.emit('response', {did: did, oid: oid, iid: iid, rid: rid, value: value, error: null});});
 
     // Store the last value of the resource in database
     var registry = lwm2mServer.getRegistry();
@@ -197,15 +197,15 @@ function processActions(endpoint) {
                             } else if (e.command == "observe"){
                                 lwm2mServer.observe(device.id, parseInt(e.oid), parseInt(e.iid), parseInt(e.rid),
                                     handleObserveValues, function(error) {
-                                    if(webclient) {
-                                        webclient.emit('observe', {
+                                    _.each(webclient, function(client) {
+                                        client.emit('observe', {
                                             did: device.id,
                                             oid: parseInt(e.oid),
                                             iid: parseInt(e.iid),
                                             rid: parseInt(e.rid),
                                             error: error
                                         });
-                                    }
+                                    });
 
                                     if(e.mqtt_topic != ""){
                                         var obs = new models.Observation({
@@ -239,9 +239,9 @@ function registrationHandler(endpoint, lifetime, version, binding, payload, call
     callback();
 
     resolveObjRes(endpoint, payload, function(device){
-         if(webclient){
-            webclient.emit('new-registration', device);
-         }
+         _.each(webclient, function(client) {
+            client.emit('new-registration', device);
+         });
 
          // done, now process actions
          //process.nextTick(processActions.bind(null,endpoint));
@@ -258,9 +258,9 @@ function unregistrationHandler(device, callback) {
         Observation.find({device_id: device.id}).remove();
     });
 
-    if(webclient){
-        webclient.emit('unregistration', device);
-    }
+    _.each(webclient, function(client) {
+        client.emit('unregistration', device);
+    });
 
     callback();
 }
@@ -272,9 +272,9 @@ function updateRegistrationHandler(obj, payload, callback) {
     console.log('Endpoint name: %s\nLifetime: %s\nBinding: %s\nPayload: %s', obj.name, obj.lifetime, obj.binding, payload);
     resolveObjRes(obj.name, payload, function(device) {
       //lwm2mevents.emit('update-registration', obj);
-      if(webclient){
-         webclient.emit('update-registration', device);
-      }
+      _.each(webclient, function(client) {
+         client.emit('update-registration', device);
+      });
     });
 }
 
@@ -285,10 +285,16 @@ function setHandlers(serverInfo, callback) {
     callback();
 }
 
+function disconnect_client(client){
+   webclient = _.without(webclient, _.findWhere(webclient, {
+        id: client.id
+   }));
+}
+
 function startServer(io){
     io.on('connection', function(client) {
-        console.log('Web client connected to the LwM2M Server.');
-        webclient = client;
+        console.log('Web client connected to the LwM2M Server: ', client.id, client.handshake.address);
+        webclient.push(client);
 
         client.on('user', function(data) {
             console.log(data);
@@ -402,6 +408,11 @@ function startServer(io){
                 });
             }
 
+        });
+    
+        client.on('disconnect', function() {
+           console.log("Client disconnected:", client.id);
+           disconnect_client(client);
         });
 
     });

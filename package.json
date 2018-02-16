@@ -13,7 +13,7 @@
     "datatables-query": "^0.2.0",
     "express": "latest",
     "express-handlebars": "latest",
-    "lwm2m-id": "latest",
+    "lwm2m-id": "https://github.com/gt3389b/lwm2m-id.git",
     "lwm2m-node-lib": "*",
     "moment": "^2.17.1",
     "mongoose": "^4.8.1",

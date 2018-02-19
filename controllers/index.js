@@ -30,8 +30,10 @@ router.get("/", function(req, res){
                     id: deviceList[i].id,
                     name: deviceList[i].name,
                     address: deviceList[i].address,
+                    port: deviceList[i].port,
                     lifetime: deviceList[i].lifetime,
                     binding: deviceList[i].binding,
+                    lastSeen: deviceList[i].lastSeen,
                     creationDate: deviceList[i].creationDate,
                     battery_level: battery_level ? battery_level.value : undefined
                 });

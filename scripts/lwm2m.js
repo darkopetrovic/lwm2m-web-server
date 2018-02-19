@@ -1,20 +1,21 @@
 'use strict';
 
-var lwm2mServer = require('../../lwm2m-node-lib/lib/lwm2m-node-lib').server,
-    config = require('../../lwm2m-node-lib/config-mongo'),
+var lwm2mServer = require('../lwm2m-node-lib/lib/lwm2m-node-lib').server,
+    config = require('../lwm2m-node-lib/config-mongo'),
     async = require('async'),
     events = require('events'),
     models = require('./models'),
     _ = require('underscore'),
     mqtt = require('mqtt'),
     lwm2mid = require('./lwm2mid'),
-    Device = require('../../lwm2m-node-lib/lib/services/model/Device'),
-    mqtt_config = require('../mqtt-config').mqtt_config;
+    Device = require('../lwm2m-node-lib/lib/services/model/Device'),
+    mqtt_config = require('../mqtt-config').mqtt_config,
+    request = require('request');
 
 
 var lwm2mevents = new events.EventEmitter();
 var observations = [];
-var webclient = null;
+var webclient = [];
 
 var mqttclient = mqtt.connect(mqtt_config);
 
@@ -37,7 +38,7 @@ function handleResult(message) {
 
 function handleObserveValues(value, oid, iid, rid, did) {
     console.log('\nGot new value: %s\n', value);
-    webclient.emit('response', {did: did, oid: oid, iid: iid, rid: rid, value: value, error: null});
+    _.each(webclient, function(client) {client.emit('response', {did: did, oid: oid, iid: iid, rid: rid, value: value, error: null});});
 
     // Store the last value of the resource in database
     var registry = lwm2mServer.getRegistry();
@@ -56,13 +57,44 @@ function handleObserveValues(value, oid, iid, rid, did) {
             if(observations){
                 observations.forEach(function(obs){
                     if(obs.mqtt_topic != ""){
-                        lwm2mServer.getDeviceById(did, function(error, device){
-                            var topic = obs.mqtt_topic.replace("{DEVICE_NAME}", device.name);
-                            topic = topic.replace("{OID}", oid);
-                            topic = topic.replace("{IID}", iid);
-                            topic = topic.replace("{RID}", rid);
-                            mqttclient.publish(topic, '{"value":'+value+'}');
-                        });
+                        if (obs.mqtt_topic.indexOf("http://") == 0) {
+                           console.log("sending to ", obs.mqtt_topic, did, oid, iid, rid, value);
+
+                           var props = { did:'9ea3abcc-91b3-5f7b-9fe4-c7526c131f2a', tag:596, val:value};
+                           //1) Ambient temperature => 596
+                           //2) Internal temperature => 616
+                           //3) Humidity => 163
+                           //4) Lux => 41
+                           if (oid == 3303 && iid == 0) {
+                              props.tag = 596
+                           }
+                           if (oid == 3303 && iid == 1) {
+                              props.tag = 616
+                           }
+                           if (oid == 3304 && iid == 0) {
+                              props.tag = 163
+                           }
+                           if (oid == 3301 && iid == 0) {
+                              props.tag = 41
+                           }
+
+                           console.log("sending to ", props);
+
+
+                           // did=9ea3abcc-91b3-5f7b-9fe4-c7526c131f2a tag=596 val=20
+                           request({ url: obs.mqtt_topic, method: 'GET', qs: props}, function(err, response, body) {
+                              if (err) { console.log(err); return; }
+                              console.log("HTTP: get response: ", response.statusCode);
+                           });
+                        } else {
+                           lwm2mServer.getDeviceById(did, function(error, device){
+                              var topic = obs.mqtt_topic.replace("{DEVICE_NAME}", device.name);
+                              topic = topic.replace("{OID}", oid);
+                              topic = topic.replace("{IID}", iid);
+                              topic = topic.replace("{RID}", rid);
+                              mqttclient.publish(topic, '{"value":'+value+'}');
+                           });
+                        }
                     }
                 });
             }
@@ -70,81 +102,83 @@ function handleObserveValues(value, oid, iid, rid, did) {
         });
 }
 
-function registrationHandler(endpoint, lifetime, version, binding, payload, callback) {
-    console.log('\nDevice registration:\n----------------------------\n');
-    console.log('Endpoint name: %s\nLifetime: %s\nBinding: %s\nPayload: %s', endpoint, lifetime, binding, payload);
+function resolveObjRes(endpoint, payload, cb) {
 
-    // finish the registration in the database with this call
-    callback();
+   // update the registered device with the objects in payload and mandatory resources
+   var calls = [];
+   var objectsList = [];
 
-    // update the registered device with the objects in payload and mandatory resources
-    var calls = [];
-    var objectsList = [];
+   if (payload != "") {
+      var objects = payload.toString().split(',');
+      _.each(objects, function (o) {
+         calls.push(function(callback) {
+            // TODO: handle the case where the instance is not specified in the registration payload
+            var objectId = parseInt(o.match(/<\/(.*)\/(.*)>/)[1]);
+            var objectInst = parseInt(o.match(/<\/(.*)\/(.*)>/)[2]);
 
-    if (payload != "") {
-        var objects = payload.toString().split(',');
+            var mandRes = [];
+            lwm2mid.getFullObject(objectId, function (err, object) {
 
-        _.each(objects, function (o) {
+               // add the mandatory resource associated to the object
+               _.each(object.resourceDetails, function (r) {
+                  if (r.mandatory) {
+                        mandRes.push({id: parseInt(r.id), value: null});
+                  }
+               });
 
-            calls.push(function(callback) {
+               var obj = _.findWhere(objectsList, {id: objectId});
+               if (obj) {
+                  // object already in the list, just add the new instance
+                  obj.instances.push({
+                        id: objectInst,
+                        resources: mandRes
+                  });
+               } else {
+                  // add the object in the list
+                  objectsList.push({
+                        id: objectId,
+                        instances: [{
+                           id: objectInst,
+                           resources: mandRes
+                        }]
+                  });
+               }
 
-                // TODO: handle the case where the instance is not specified in the registration payload
-                var objectId = parseInt(o.match(/<\/(.*)\/(.*)>/)[1]);
-                var objectInst = parseInt(o.match(/<\/(.*)\/(.*)>/)[2]);
-
-                var mandRes = [];
-                lwm2mid.getFullObject(objectId, function (err, object) {
-
-                    // add the mandatory resource associated to the object
-                    _.each(object.resourceDetails, function (r) {
-                        if (r.mandatory) {
-                            mandRes.push({id: parseInt(r.id), value: null});
-                        }
-                    });
-
-                    var obj = _.findWhere(objectsList, {id: objectId});
-                    if (obj) {
-                        // object already in the list, just add the new instance
-                        obj.instances.push({
-                            id: objectInst,
-                            resources: mandRes
-                        });
-                    } else {
-                        // add the object in the list
-                        objectsList.push({
-                            id: objectId,
-                            instances: [{
-                                id: objectInst,
-                                resources: mandRes
-                            }]
-                        });
-                    }
-
-                    callback(null);
-
-                });
-
+               callback(null);
             });
+         });
+      });
+   }
 
-        });
+   async.parallel(calls, function(err, result){
+      Device.model.findOne({name: endpoint}, function(err, device){
+         // device's objects may have been populated by the device model below
+         //console.log(device.objects);
 
-    }
-
-    async.parallel(calls, function(err, result){
-        Device.model.findOne({name: endpoint}, function(err, device){
-
-            // device's objects may have been populated by the device model below
-            if(!device.objects.length){
-                device.objects = objectsList;
-                device.save();
+         var temp = []
+         _.each(objectsList, function(object) {
+            var res = _.findWhere(device.objects, { id: object.id });
+            if(!res){
+               console.log("lwm2m adding new object into device: ", object);
+               temp.push(object);
+            } else {
+               temp.push(res);
             }
+         })
 
-            if(webclient){
-                webclient.emit('new-registration', device);
-            }
-        });
-    });
+         // I tried adding the objects directly to the array but this causes a problem when saving the device.
+         device.objects = temp;
 
+         device.save(function(err) {
+            if(err) console.log(err);
+            //console.log(device);
+            cb(device);
+         });
+      });
+   });
+}
+
+function processActions(endpoint) {
     // get list of device model to compare with the registered device
     var DeviceModel = models.DeviceModel;
     DeviceModel.find({}, function(err, device_models){
@@ -154,6 +188,7 @@ function registrationHandler(endpoint, lifetime, version, binding, payload, call
             // compare the device endpoint name with the prefix device model
             var regex = new RegExp("^"+device_model.endpoint_prefix+"?");
             if(endpoint.match(regex)){
+                console.log("ACTION MATCH!!!");
 
                 // copy full objects when present to the actual device (overwrite previous object list)
                 if(device_model.objects){
@@ -173,27 +208,36 @@ function registrationHandler(endpoint, lifetime, version, binding, payload, call
                     lwm2mServer.getDeviceByName(endpoint, function(error, device){
 
                         _.each(register_actions, function(e){
+                            //console.log(e);
 
                             if(e.command == "read"){
+                                lwm2mServer.read(device.id, parseInt(e.oid), parseInt(e.iid), parseInt(e.rid), function (error, result) {
+                                   if(!err)
+                                      console.log("Action: read returned: ", result);
+                                });
 
                             } else if (e.command == "write"){
                                 lwm2mServer.write(device.id, parseInt(e.oid), parseInt(e.iid), parseInt(e.rid), e.payload, function (error, result) {
-
+                                   if(!err)
+                                      console.log("Action: write returned: ", result);
                                 });
                             } else if (e.command == "execute"){
-
+                                lwm2mServer.execute(device.id, parseInt(e.oid), parseInt(e.iid), parseInt(e.rid), e.payload, function (error, result) {
+                                   if(!err)
+                                      console.log("Action: execute returned: ", result);
+                                });
                             } else if (e.command == "observe"){
                                 lwm2mServer.observe(device.id, parseInt(e.oid), parseInt(e.iid), parseInt(e.rid),
                                     handleObserveValues, function(error) {
-                                    if(webclient) {
-                                        webclient.emit('observe', {
+                                    _.each(webclient, function(client) {
+                                        client.emit('observe', {
                                             did: device.id,
                                             oid: parseInt(e.oid),
                                             iid: parseInt(e.iid),
                                             rid: parseInt(e.rid),
                                             error: error
                                         });
-                                    }
+                                    });
 
                                     if(e.mqtt_topic != ""){
                                         var obs = new models.Observation({
@@ -217,6 +261,24 @@ function registrationHandler(endpoint, lifetime, version, binding, payload, call
             }
         })
     });
+}
+
+function registrationHandler(endpoint, lifetime, version, binding, payload, callback) {
+    console.log('\nDevice registration:\n----------------------------\n');
+    console.log('Endpoint name: %s\nLifetime: %s\nBinding: %s\nPayload: %s', endpoint, lifetime, binding, payload);
+
+    // finish the registration in the database with this call
+    callback();
+
+    resolveObjRes(endpoint, payload, function(device){
+         _.each(webclient, function(client) {
+            client.emit('new-registration', device);
+         });
+
+         // done, now process actions
+         //process.nextTick(processActions.bind(null,endpoint));
+         processActions(endpoint);
+    });
 
 }
 
@@ -228,19 +290,24 @@ function unregistrationHandler(device, callback) {
         Observation.find({device_id: device.id}).remove();
     });
 
-    if(webclient){
-        webclient.emit('unregistration', device);
-    }
+    _.each(webclient, function(client) {
+        client.emit('unregistration', device);
+    });
 
     callback();
 }
 
 function updateRegistrationHandler(obj, payload, callback) {
     callback();
-    //lwm2mevents.emit('update-registration', obj);
-    if(webclient){
-        webclient.emit('update-registration', obj);
-    }
+
+    console.log('\nDevice update registration:\n----------------------------\n');
+    console.log('Endpoint name: %s\nLifetime: %s\nBinding: %s\nPayload: %s', obj.name, obj.lifetime, obj.binding, payload);
+    resolveObjRes(obj.name, payload, function(device) {
+      //lwm2mevents.emit('update-registration', obj);
+      _.each(webclient, function(client) {
+         client.emit('update-registration', device);
+      });
+    });
 }
 
 function setHandlers(serverInfo, callback) {
@@ -250,10 +317,16 @@ function setHandlers(serverInfo, callback) {
     callback();
 }
 
+function disconnect_client(client){
+   webclient = _.without(webclient, _.findWhere(webclient, {
+        id: client.id
+   }));
+}
+
 function startServer(io){
     io.on('connection', function(client) {
-        console.log('Web client connected to the LwM2M Server.');
-        webclient = client;
+        console.log('Web client connected to the LwM2M Server: ', client.id, client.handshake.address);
+        webclient.push(client);
 
         client.on('user', function(data) {
             console.log(data);
@@ -367,6 +440,11 @@ function startServer(io){
                 });
             }
 
+        });
+    
+        client.on('disconnect', function() {
+           console.log("Client disconnected:", client.id);
+           disconnect_client(client);
         });
 
     });

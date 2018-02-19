@@ -25,7 +25,7 @@ function adjustProgressBarColor(bar, percentage)
         bar.addClass('progress-bar-primary');
     } else if (percentage>15 && percentage <= 50){
         bar.addClass('progress-bar-warning');
-    } else if (percentage>0 && percentage <= 15){
+    } else if (percentage <= 15){
         bar.addClass('progress-bar-danger');
     }
 }
@@ -38,7 +38,10 @@ function start_lifetime_decrease(){
             $(e).attr('aria-valuenow', valuenow-1);
             $(e).html(valuenow-1);
             var percentage = (valuenow-1)/valuemax*100;
-            $(e).css('width', percentage+'%');
+            if (valuenow <= 0)
+               $(e).css('width', '100%');
+            else
+               $(e).css('width', percentage+'%');
 
             if(percentage>50 && percentage<80){
                 $(e).removeClass('progress-bar-success').addClass('progress-bar-primary');
@@ -53,8 +56,8 @@ function start_lifetime_decrease(){
 
 function update_lifetimes(e){
     var lastseen_string = $(e).parents('.device-details').find('.lastseen').html();
-    var lastseen = moment(lastseen_string, "DD.MM.YYYY HH:mm:ss");
-    var now = moment();
+    var lastseen = moment(lastseen_string+" +0000", "DD.MM.YYYY HH:mm:ss Z");
+    var now = moment().utc();
     var elapsed = Math.round(moment.duration(now.diff(lastseen)).asSeconds());
     var valuemax = parseInt($(e).attr('aria-valuemax'));
     $(e).attr('aria-valuenow', valuemax-elapsed);
@@ -107,8 +110,11 @@ $(function() {
             .removeClass('progress-bar-primary')
             .addClass('progress-bar-success');
 
+        $("#address-"+device.id).html( device.address );
+        $("#port-"+device.id).html( device.port );
         $("#binding-box-"+device.id).html(device.binding);
-        $("#lastseen-"+device.id).html( moment(device.creationDate).format(DateFormats['short']) );
+        $("#creationdate-"+device.id).html( moment(device.createDate).utc().format(DateFormats['short']) );
+        $("#lastseen-"+device.id).html( moment(device.lastSeen).utc().format(DateFormats['short']) );
 
     });
 

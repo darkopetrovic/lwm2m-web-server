@@ -14,7 +14,7 @@ var path = __dirname + '/views/';
 
 // -------------------------------------------------------------------
 var lwm2m = require('./scripts/lwm2m'),
-    config = require('../lwm2m-node-lib/config-mongo').server,
+    config = require('lwm2m-node-lib/config-mongo').server,
     dbService = require('./scripts/db')
 // -------------------------------------------------------------------
 
